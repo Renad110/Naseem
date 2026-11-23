@@ -233,15 +233,88 @@ td.n{color:var(--ice);font-weight:600}
 .team span{padding:8px 14px;border-radius:20px;background:var(--card);border:1px solid var(--line);font-size:13px}
 .again{margin-top:10px;padding:12px 20px;border-radius:26px;background:var(--teal);color:#062320;font-weight:600}
 
-@media (max-width:1100px){
-  body{overflow:auto}
-  .deck{position:relative;inset:auto;min-height:calc(100vh - 134px);margin:64px 0 70px}
-  .slide{position:absolute;padding:10px 20px}
-  .explorer{grid-template-columns:1fr}
-  .stage{min-height:440px}
-  .sim,.app,.res,.final{grid-template-columns:1fr}
-  .grid3,.road-wrap{grid-template-columns:1fr}
-  .dash{grid-template-columns:1fr}
+.pills{display:none}
+@media (max-width:1024px){
+  .top{height:52px;padding:0 16px}
+  .brand{font-size:15px;gap:8px}
+  .brand small{display:none}
+  .dots{gap:5px}.dots button{width:12px}.dots button.on{width:24px}
+  .deck{position:fixed;inset:52px 0 60px 0}
+  .slide{padding:6px 18px 28px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:block}
+  .nav{height:60px;padding:0 12px;background:linear-gradient(rgba(12,41,37,0),var(--bg1) 45%)}
+  .nav .btn{padding:9px 16px;font-size:13px}
+  .nav .hint{font-size:11px}
+  h1{font-size:34px}
+  h2{font-size:25px;line-height:1.2}
+  .sub{font-size:13.5px}
+  .kicker{font-size:11px;letter-spacing:2px}
+
+  /* explorer */
+  .explorer{display:flex;flex-direction:column;gap:0}
+  .intro .ar-title{font-size:20px;margin:8px 0 10px}
+  .intro .tags{margin-top:12px}
+  .open .intro{display:none}
+  .stage{width:100%;height:330px;min-height:0;flex:none;overflow:visible}
+  .explorer{width:100%;max-width:100%}
+  .pills,.panel{max-width:100%}
+  .open .stage{height:420px}
+  .stack{transform:rotateX(58deg) rotateZ(-34deg) scale(.8)}
+  .explorer:not(.open) .stack:hover{transform:rotateX(58deg) rotateZ(-34deg) scale(.8)}
+  .open .stack{transform:translate(0,150px) rotateX(58deg) rotateZ(-34deg) scale(.62)}
+  .labels{display:none}
+  .tap{bottom:4px}
+  .open .pills{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+  .pills::-webkit-scrollbar{display:none}
+  .pills button{flex:none;font-size:12.5px;padding:8px 13px;border-radius:20px;border:1px solid var(--line);color:var(--ink);white-space:nowrap}
+  .pills button.sel{background:var(--teal);border-color:var(--teal);color:#062320;font-weight:600}
+  .panel{display:none;min-height:0;padding:18px;border-radius:18px}
+  .open .panel{display:flex}
+  .panel h3{font-size:19px}
+  .panel .arname{font-size:16px}
+  .panel .pnav button{font-size:12px;padding:8px 10px}
+
+  /* problem */
+  .grid3{grid-template-columns:1fr;gap:10px;margin-top:16px}
+  .card{padding:16px}
+  .card h4{margin:8px 0 4px}
+  .gap{flex-direction:column;align-items:flex-start;gap:10px;padding:16px}
+
+  /* sim */
+  .sim{display:flex;flex-direction:column;gap:14px;margin-top:12px}
+  .ctrl{padding:16px}
+  .status{gap:20px;padding:8px}
+  .readouts{grid-template-columns:repeat(2,1fr)}
+  .step{padding:12px}
+
+  /* app */
+  .app{display:flex;flex-direction:column;align-items:center;gap:18px;margin-top:14px}
+  .dash{grid-template-columns:1fr;width:100%;padding:14px}
+  .map{height:230px}
+
+  /* results */
+  .res{display:flex;flex-direction:column;gap:18px;margin-top:12px}
+  .proto{max-width:420px}
+  .proto img{height:200px;object-fit:cover}
+  table{font-size:12px}
+  th,td{padding:9px 6px}
+  th{font-size:10px;letter-spacing:.5px}
+  .bars,.blabels{gap:6px}
+  .bar{width:13px}
+  .blabels{font-size:10px}
+  .legend{gap:10px;font-size:11px;margin-bottom:26px}
+
+  /* roadmap */
+  .track{display:none}
+  .road-wrap{grid-template-columns:1fr;gap:12px;margin-top:16px}
+  .phasecard{padding:18px}
+
+  /* final */
+  .final{display:flex;flex-direction:column;gap:18px;padding-top:6px}
+  .team span{font-size:12px;padding:7px 12px}
+}
+@media (max-width:1024px) and (min-width:700px){
+  .grid3,.road-wrap{grid-template-columns:repeat(2,1fr)}
+  .res{display:grid;grid-template-columns:300px 1fr}
 }
 </style>
 </head>
@@ -295,6 +368,7 @@ td.n{color:var(--ice);font-weight:600}
       <div class="tap" id="tap">👆 Tap the patch to open its layers</div>
     </div>
 
+    <div class="pills" id="pills"></div>
     <aside class="panel" id="panel">
       <div class="empty" id="panelEmpty">
         <div class="kicker" style="margin-bottom:10px">6 functional layers</div>
@@ -513,7 +587,7 @@ let cur=0;
 slides.forEach((s,i)=>{const b=document.createElement('button');b.title=s.dataset.title;b.onclick=()=>go(i);dots.appendChild(b)});
 function go(i){
   cur=Math.max(0,Math.min(slides.length-1,i));
-  slides.forEach((s,k)=>s.classList.toggle('active',k===cur));
+  slides.forEach((s,k)=>{s.classList.toggle('active',k===cur);if(k===cur)s.scrollTop=0});
   [...dots.children].forEach((d,k)=>d.classList.toggle('on',k===cur));
   document.getElementById('slideName').textContent=(cur+1)+' / '+slides.length+' · '+slides[cur].dataset.title;
   document.getElementById('prev').style.visibility=cur?'visible':'hidden';
@@ -535,17 +609,21 @@ const lblEls=LAYERS.map((L,i)=>{
   d.innerHTML=`<b><span class="n">${6-i}</span>${L.t}</b><span class="ar" style="direction:rtl;display:block;text-align:left">${L.ar}</span>`;
   d.onclick=e=>{e.stopPropagation();select(i)};labels.appendChild(d);return d;
 });
+const pillsEl=document.getElementById('pills');
+const pillEls=LAYERS.map((L,i)=>i).reverse().map(i=>{const b=document.createElement('button');b.textContent=(6-i)+' · '+LAYERS[i].t.split(' & ')[0].replace('Protective ','').replace('Interactive ','');b.onclick=()=>select(i);pillsEl.appendChild(b);b.dataset.k=i;return b});
+const narrow=()=>window.innerWidth<=1024;
 function openPatch(){ex.classList.add('open');setTimeout(placeLabels,950);setTimeout(placeLabels,300)}
 function closePatch(){ex.classList.remove('open','has-sel');sel=-1;layerEls.forEach(l=>l.classList.remove('sel'));lblEls.forEach(l=>l.classList.remove('sel'));
   document.getElementById('panelEmpty').style.display='';document.getElementById('panelBody').style.display='none';lines.innerHTML=''}
 stack.addEventListener('click',e=>{
-  if(!ex.classList.contains('open')){openPatch();return}
+  if(!ex.classList.contains('open')){openPatch();if(narrow())setTimeout(()=>select(5),350);return}
   const l=e.target.closest('.layer'); if(l) select(+l.dataset.k);
 });
 function select(i){
   sel=i;ex.classList.add('has-sel');
   layerEls.forEach((l,k)=>l.classList.toggle('sel',k===i));
   lblEls.forEach((l,k)=>l.classList.toggle('sel',k===i));
+  pillEls.forEach(b=>{const on=+b.dataset.k===i;b.classList.toggle('sel',on);if(on&&narrow())pillsEl.scrollTo({left:b.offsetLeft-pillsEl.clientWidth/2+b.offsetWidth/2,behavior:'smooth'})});
   const L=LAYERS[i];
   document.getElementById('panelEmpty').style.display='none';
   const pb=document.getElementById('panelBody');pb.style.display='flex';
@@ -564,7 +642,7 @@ document.getElementById('pDown').onclick=()=>sel>0&&select(sel-1);
 document.getElementById('pClose').onclick=closePatch;
 
 function placeLabels(){
-  if(!ex.classList.contains('open')){lines.innerHTML='';return}
+  if(!ex.classList.contains('open')||narrow()){lines.innerHTML='';return}
   const sr=labels.getBoundingClientRect();
   const ys=layerEls.map(l=>{const r=l.getBoundingClientRect();return {x:r.right-sr.left-r.width*.18,y:r.top-sr.top+r.height*.42}});
   // spread labels vertically to avoid overlap
@@ -675,6 +753,10 @@ document.querySelectorAll('.phasecard').forEach(c=>c.onclick=()=>{
   document.getElementById('trackFill').style.width=c.dataset.w+'%';
 });
 
+/* swipe between slides on touch screens */
+let tx=null,ty=null;
+document.getElementById('deck').addEventListener('touchstart',e=>{if(e.target.closest('input,.pills,.stage')){tx=null;return}tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+document.getElementById('deck').addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>60&&Math.abs(dy)<45)go(cur+(dx<0?1:-1));tx=null},{passive:true});
 go(0);
 </script>
 </body>
